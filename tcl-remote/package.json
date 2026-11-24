@@ -1,0 +1,14 @@
+{
+  "name": "tcl-remote",
+  "version": "1.0.0",
+  "description": "Controle remoto web para TV TCL (Roku TV / Android TV)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "androidtv-remote": "^1.0.10"
+  }
+}

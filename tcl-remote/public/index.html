@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0d0f14">
+<title>Controle TCL</title>
+<style>
+:root{--bg:#0d0f14;--panel:#171a22;--btn:#232733;--btn2:#2e3342;--txt:#eef0f5;--mut:#8a90a2;--acc:#e5322d;--ok:#2fbf71}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:16px system-ui,sans-serif;overscroll-behavior:none}
+.app{max-width:420px;margin:0 auto;padding:12px 16px calc(24px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;justify-content:space-between;padding:6px 0 12px}
+header b{font-size:18px;letter-spacing:.5px}header b i{color:var(--acc);font-style:normal}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--mut);margin-right:6px}
+.dot.on{background:var(--ok)}.dot.wait{background:#f0b429}
+#st{font-size:13px;color:var(--mut)}
+button{font:inherit;color:var(--txt);background:var(--btn);border:0;border-radius:14px;height:52px;min-width:0;cursor:pointer;touch-action:manipulation;transition:transform .05s,background .1s}
+button:active,button.p{transform:scale(.94);background:var(--btn2)}
+.row{display:grid;gap:10px;margin-bottom:10px}
+.c3{grid-template-columns:repeat(3,1fr)}.c4{grid-template-columns:repeat(4,1fr)}
+.pwr{background:var(--acc)}.pwr:active{background:#c42824}
+.sm{height:44px;font-size:14px}
+.dpad{position:relative;width:240px;height:240px;margin:14px auto;border-radius:50%;background:var(--panel);display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr)}
+.dpad button{background:none;border-radius:50%;height:auto;font-size:22px}
+.dpad button:active{background:var(--btn2)}
+.dpad .ok{background:var(--btn);border-radius:50%;font-size:15px;font-weight:600;margin:6px}
+.dpad .up{grid-area:1/2}.dpad .left{grid-area:2/1}.dpad .ok{grid-area:2/2}.dpad .right{grid-area:2/3}.dpad .down{grid-area:3/2}
+.vol{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.rocker{background:var(--panel);border-radius:18px;display:grid;gap:4px;padding:4px}
+.rocker button{height:56px;background:none;font-size:24px}.rocker small{text-align:center;color:var(--mut);font-size:11px;letter-spacing:1px}
+.apps button{font-weight:700;font-size:13px;height:46px}
+.n{height:46px;font-size:18px}
+details{background:var(--panel);border-radius:14px;padding:4px 14px;margin:14px 0}
+summary{padding:12px 0;cursor:pointer;color:var(--mut);list-style:none}
+input,select{width:100%;font:inherit;color:var(--txt);background:var(--btn);border:1px solid #333a4d;border-radius:10px;padding:12px;margin:6px 0;user-select:text}
+.found button{width:100%;height:auto;padding:10px;margin:4px 0;text-align:left;font-size:14px}
+.msg{font-size:13px;color:var(--mut);margin:6px 0 10px;line-height:1.4}.err{color:#ff7a75}
+#pair{display:none;background:#2a2410;border:1px solid #6b5a14;border-radius:14px;padding:12px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header><b>TCL <i>Remote</i></b><span id="st"><span class="dot" id="dot"></span><span id="stt">sem TV</span></span></header>
+
+  <div id="pair">
+    <div class="msg" style="color:#f0d27a">Digite o código de 6 caracteres que apareceu na tela da TV:</div>
+    <input id="code" maxlength="6" autocapitalize="characters" placeholder="ABC123">
+    <button style="width:100%" id="pairBtn">Parear</button>
+  </div>
+
+  <div class="row c3">
+    <button class="pwr" data-k="power">⏻</button>
+    <button class="sm" data-k="input" style="height:52px">Entrada</button>
+    <button data-k="mute">🔇</button>
+  </div>
+
+  <div class="dpad">
+    <button class="up" data-k="up" data-r>▲</button>
+    <button class="left" data-k="left" data-r>◀</button>
+    <button class="ok" data-k="ok">OK</button>
+    <button class="right" data-k="right" data-r>▶</button>
+    <button class="down" data-k="down" data-r>▼</button>
+  </div>
+
+  <div class="row c3">
+    <button data-k="back">⮌ Voltar</button>
+    <button data-k="home">⌂ Home</button>
+    <button data-k="menu">☰ Menu</button>
+  </div>
+
+  <div class="vol">
+    <div class="rocker"><button data-k="volup" data-r>＋</button><small>VOL</small><button data-k="voldown" data-r>－</button></div>
+    <div class="rocker"><button data-k="chup" data-r>▲</button><small>CANAL</small><button data-k="chdown" data-r>▼</button></div>
+  </div>
+
+  <div class="row c4">
+    <button class="sm" data-k="rev">⏪</button><button class="sm" data-k="play">⏯</button>
+    <button class="sm" data-k="fwd">⏩</button><button class="sm" data-k="info">ℹ︎</button>
+  </div>
+
+  <div class="row c3 apps" id="apps">
+    <button data-a="netflix" style="color:#e50914">NETFLIX</button>
+    <button data-a="youtube" style="color:#ff4040">YOUTUBE</button>
+    <button data-a="prime" style="color:#4ab3ff">PRIME</button>
+    <button data-a="disney" style="color:#6fa0ff">DISNEY+</button>
+    <button data-a="globoplay" style="color:#ff8a3d">GLOBOPLAY</button>
+    <button data-a="max" style="color:#a78bfa">MAX</button>
+  </div>
+
+  <details id="nums"><summary>Teclado numérico / HDMI</summary>
+    <div class="row c3" style="margin-top:6px">
+      <button class="n" data-k="n1">1</button><button class="n" data-k="n2">2</button><button class="n" data-k="n3">3</button>
+      <button class="n" data-k="n4">4</button><button class="n" data-k="n5">5</button><button class="n" data-k="n6">6</button>
+      <button class="n" data-k="n7">7</button><button class="n" data-k="n8">8</button><button class="n" data-k="n9">9</button>
+      <button class="n" data-k="tv">TV</button><button class="n" data-k="n0">0</button><button class="n" data-k="hdmi1">HDMI 1</button>
+    </div>
+    <div class="row c3"><button class="sm" data-k="hdmi2">HDMI 2</button><button class="sm" data-k="hdmi3">HDMI 3</button><button class="sm" data-k="hdmi4">HDMI 4</button></div>
+  </details>
+
+  <details id="setup"><summary>⚙ Configurar TV</summary>
+    <div class="msg">TV e este servidor precisam estar no mesmo Wi-Fi.</div>
+    <button id="scan" class="sm" style="width:100%">🔍 Procurar TV na rede</button>
+    <div class="found" id="found"></div>
+    <select id="type"><option value="android">Android TV / Google TV</option><option value="roku">Roku TV</option></select>
+    <input id="host" inputmode="decimal" placeholder="IP da TV (ex.: 192.168.0.25)">
+    <button id="save" style="width:100%">Conectar</button>
+    <div class="msg" id="hint"></div>
+  </details>
+  <div class="msg err" id="err"></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const api=(p,b)=>fetch('/api/'+p,b?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}:{}).then(async r=>{const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);return j});
+const showErr=e=>{$('#err').textContent=e?e.message||e:''};
+const buzz=()=>navigator.vibrate&&navigator.vibrate(12);
+
+async function press(k){buzz();try{await api('key',{key:k});showErr()}catch(e){showErr(e)}}
+document.querySelectorAll('[data-k]').forEach(b=>{
+  let t,iv;
+  const stop=()=>{clearTimeout(t);clearInterval(iv);b.classList.remove('p')};
+  b.addEventListener('pointerdown',e=>{e.preventDefault();b.classList.add('p');press(b.dataset.k);
+    if(b.hasAttribute('data-r'))t=setTimeout(()=>{iv=setInterval(()=>press(b.dataset.k),140)},450)});
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,stop));
+});
+document.querySelectorAll('[data-a]').forEach(b=>b.onclick=async()=>{buzz();try{await api('app',{app:b.dataset.a});showErr()}catch(e){showErr(e)}});
+
+// teclado do computador
+const map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',Enter:'ok',Escape:'back',Backspace:'back',Home:'home',m:'mute','+':'volup','-':'voldown',PageUp:'chup',PageDown:'chdown'};
+addEventListener('keydown',e=>{if(/INPUT|SELECT/.test(e.target.tagName))return;const k=map[e.key];if(k){e.preventDefault();press(k)}});
+
+const HINTS={android:'Android/Google TV: na primeira vez a TV mostra um código de 6 caracteres — digite aqui para parear.',roku:'Roku TV: ative em Configurações › Sistema › Configurações avançadas › Controle por apps móveis › "Permissivo".'};
+const upd=()=>$('#hint').textContent=HINTS[$('#type').value];$('#type').onchange=upd;upd();
+
+let last={};
+async function refresh(){
+  try{
+    const s=await api('status');last=s;
+    const on=s.state==='ready';
+    $('#dot').className='dot '+(on?'on':(s.state==='connecting'||s.state==='pairing')?'wait':'');
+    $('#stt').textContent={ready:'conectado • '+s.host,connecting:'conectando…',pairing:'aguardando código',idle:s.host?'desconectado':'sem TV',error:'erro'}[s.state]||s.state;
+    $('#pair').style.display=s.state==='pairing'?'block':'none';
+    if(s.type)$('#type').value=s.type;if(s.host&&!$('#host').value)$('#host').value=s.host;upd();
+    if(!s.host)$('#setup').open=true;
+    if(s.state==='error'&&s.error)showErr(s.error);
+  }catch(e){$('#stt').textContent='servidor offline'}
+}
+$('#save').onclick=async()=>{try{await api('connect',{type:$('#type').value,host:$('#host').value.trim()});showErr();$('#setup').open=false;refresh()}catch(e){showErr(e)}};
+$('#pairBtn').onclick=async()=>{try{await api('pair',{code:$('#code').value});showErr();setTimeout(refresh,800)}catch(e){showErr(e)}};
+$('#scan').onclick=async()=>{
+  $('#scan').textContent='Procurando…';$('#found').innerHTML='';
+  try{const l=await api('discover');
+    $('#found').innerHTML=l.length?'':'<div class="msg">Nenhuma TV encontrada. Digite o IP manualmente (Configurações › Rede da TV).</div>';
+    l.forEach(d=>{const b=document.createElement('button');b.textContent=`${d.host} — ${d.type==='roku'?'Roku TV':'Android/Google TV'}`;
+      b.onclick=()=>{$('#host').value=d.host;$('#type').value=d.type;upd()};$('#found').appendChild(b)});
+  }catch(e){showErr(e)}$('#scan').textContent='🔍 Procurar TV na rede'};
+refresh();setInterval(refresh,2500);
+</script>
+</body>
+</html>
