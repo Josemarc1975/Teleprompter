@@ -2,7 +2,18 @@
 
 Controle remoto para TV TCL que funciona no navegador do celular (Wi-Fi).
 
-## Como usar
+## Direto no celular Android (sem computador)
+1. Instale o **Termux pelo F-Droid** (https://f-droid.org/packages/com.termux/). A versão da Play Store está desatualizada e não funciona.
+2. Abra o Termux, cole e aperte Enter:
+   ```
+   curl -fsSL https://raw.githubusercontent.com/Josemarc1975/Teleprompter/claude/app-controle-remoto-tv-tlc-9r1u7b/tcl-remote/termux-install.sh | bash
+   ```
+3. Abra `http://localhost:3000` no Chrome do celular e configure a TV.
+4. Nas próximas vezes: abra o Termux, digite `tv` e abra o endereço de novo. Dica: no Chrome, menu › "Adicionar à tela inicial".
+
+O Termux precisa ficar aberto (pode minimizar). Se a busca de TV não achar nada, digite o IP da TV à mão.
+
+## No computador
 Precisa do [Node.js](https://nodejs.org) 18+ num PC, notebook ou Raspberry ligado no **mesmo Wi-Fi da TV**.
 
 ```bash

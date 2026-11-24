@@ -11,6 +11,9 @@ const net = require('net');
 const os = require('os');
 const { AndroidRemote, RemoteKeyCode: K, RemoteDirection: D } = require('androidtv-remote');
 
+// os.networkInterfaces() pode falhar no Termux/Android recente (permissão negada)
+const ifaces = () => { try { return Object.values(os.networkInterfaces()).flat().filter((i) => i && i.family === 'IPv4' && !i.internal); } catch { return []; } };
+
 const PORT = Number(process.env.PORT) || 3000;
 const CONFIG_FILE = path.join(__dirname, 'config.json');
 const PUBLIC = path.join(__dirname, 'public');
@@ -125,8 +128,7 @@ const probe = (host, port, ms = 500) => new Promise((resolve) => {
 
 async function discover() {
   const bases = new Set();
-  for (const ifs of Object.values(os.networkInterfaces()))
-    for (const i of ifs || []) if (i.family === 'IPv4' && !i.internal) bases.add(i.address.split('.').slice(0, 3).join('.'));
+  for (const i of ifaces()) bases.add(i.address.split('.').slice(0, 3).join('.'));
   const found = [];
   const jobs = [];
   for (const b of bases) for (let n = 1; n < 255; n++) {
@@ -185,8 +187,8 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  const ips = Object.values(os.networkInterfaces()).flat().filter((i) => i && i.family === 'IPv4' && !i.internal).map((i) => i.address);
-  console.log('Controle TCL rodando. Abra no celular (mesmo Wi-Fi da TV):');
-  ips.forEach((ip) => console.log(`  http://${ip}:${PORT}`));
+  console.log('Controle TCL rodando. Abra no navegador (mesmo Wi-Fi da TV):');
+  console.log(`  http://localhost:${PORT}   (neste aparelho)`);
+  ifaces().forEach((i) => console.log(`  http://${i.address}:${PORT}   (outros aparelhos na rede)`));
   if (config.type === 'android' && config.host) startAtv();
 });
